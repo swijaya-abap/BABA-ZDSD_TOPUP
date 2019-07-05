@@ -1,0 +1,146 @@
+<mvc:View xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:semantic="sap.m.semantic"
+	xmlns:core="sap.ui.core" xmlns:form="sap.ui.layout.form" controllerName="com.baba.dsd.topupZDSD_TOPUP.controller.Main" displayBlock="true">
+	<App>
+		<semantic:FullscreenPage id="page" title="{i18n>title}" busy="{objectView>/busy}">
+			<semantic:content>
+				<form:SimpleForm title="Provide Details" layout="ResponsiveGridLayout" editable="true" labelSpanL="3" labelSpanM="3" emptySpanL="3"
+					emptySpanM="3" columnsL="1" columnsM="1">
+					<Label id="L2" width="100%" text="User" required="true"></Label>
+					<Select id="oSelect" width="100%" items="{/UserSet}" enabled="{oHeaderEnabled>/enable}" change="onClr">
+						<items>
+							<core:ListItem id="BNAME" key="{BNAME}" text="{BNAME} - {NAME_TEXTC}"/>
+						</items>
+					</Select>
+					<!--<ComboBox id="oSelect" enabled="{oHeaderEnabled>/enable}" -->
+					<!--    items="{/UserSet}">-->
+					<!--	<core:Item key="{BNAME}" text="{NAME_TEXTC}"/>-->
+					<!--</ComboBox>-->
+					<Label id="L1" width="100%" text="Selection Date" required="true"></Label>
+					<DatePicker id="DATE" displayFormat="short" valueFormat="MM/dd/yyyy" change="onClr"/>
+					<Button ariaLabelledBy="__xmlview0--label1" text="Fetch" width="80px" id="button2" press="onDate"/>
+					<Label width="100%" text="Tour"/>
+					<Input id="TOUR" editable="false"/>
+					<Input id="MAX_LOAD1" editable="false" visible="false"/>
+				</form:SimpleForm>
+				<Panel expandable="true" width="auto" visible="false">
+					<form:SimpleForm layout="ResponsiveGridLayout" editable="true" labelSpanL="3" labelSpanM="3" emptySpanL="3" emptySpanM="3" columnsL="1"
+						columnsM="1">
+						<!--<Label id="L4" width="100%" text="New Material"></Label>-->
+						<!--<Input id="NMATNR" editable="true" width="auto"></Input>-->
+						<!--<SearchField id="NMATNR" placeholder="Search for Material" enableSuggestions="true" search="onSearch" suggest="onSuggest"-->
+						<!--	suggestionItems="{ path: '/MaterialSet', sorter: { path: 'MAKTX' }, parameters: {operationMode: 'Client'}}" width="auto">-->
+						<!--	<suggestionItems>-->
+						<!--		<SuggestionItem text="{MATNR}" description="{MAKTX}" key="{MATNR}"/>-->
+						<!--	</suggestionItems>-->
+						<!--</SearchField>-->
+						<Button ariaLabelledBy="__xmlview0--label1" text="Add" width="80px" id="button3" press="onAdd"/>
+					</form:SimpleForm>
+				</Panel>
+				<!--<form:SimpleForm layout="ResponsiveLayout" editable="true" labelSpanL="3" labelSpanM="3" emptySpanL="3" emptySpanM="3" columnsL="1">-->
+				<Table noDataText="No Data found" id="tab" items="{ path : '/data', sorter : { path : 'UOM', descending: false, group: true } }" updateFinished="onUpdateF"
+					mode="MultiSelect" class="sapUiResponsiveMargin" alternateRowColors="true">
+					<items>
+						<!--<items id="items" path="/InputSet">-->
+						<ColumnListItem type="Active" id="item0">
+							<cells>
+								<ObjectIdentifier text="{MATNR}-{MAKTX}" id="MATNR"/>
+							</cells>
+							<cells >
+								<Text text="{UOM}" id="UOM" textAlign="Center"/>
+							</cells>
+							<cells>
+								<Input value="{WEIGHT_PER_UOM}" id="WEIGHT_PER_UOM" textAlign="Right" visible="false" editable="false"/>
+							</cells>
+							<!--<cells>-->
+							<!--	<Input value="{DATE}" id="DATES" editable="true" type="Date"/>-->
+							<!--</cells>-->
+							<cells>
+								<Input value="{CUMWT}" id="CUMWT" textAlign="Right" visible="false" editable="false"/>
+							</cells>
+							<cells>
+								<Input value="{QUAN_VANO}" id="QUAN_VANO" textAlign="Right" editable="false" width="auto" maxLength="6" visible="false"/>
+							</cells>
+							<cells>
+								<Input value="{QUAN_VAN}" id="QUAN_VAN" textAlign="Right" editable="false" width="auto" maxLength="6"/>
+								<Input value="{QUAN_TOP}" id="QUAN_TOP" textAlign="Right" editable="false" type="Number" width="auto"/>
+								<Input value="{QUAN_TARGET}" id="QUAN_TARGET" textAlign="Right" editable="true" maxLength="6" type="Number" change="onChange" width="auto"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+					<columns>
+						<Column id="column0" vAlign="Top" minScreenWidth="Small" demandPopin="true" popinDisplay="Inline">
+							<header>
+								<Label text="{i18n>Material}" id="label0"/>
+							</header>
+						</Column>
+						<Column id="column1" vAlign="Top" minScreenWidth="Small" demandPopin="true" popinDisplay="Inline">
+							<header>
+								<Label text="{i18n>UOM}" id="label1"/>
+							</header>
+						</Column>
+						<Column id="column5" vAlign="Top" hAlign="Center" visible="false" minScreenWidth="Small" demandPopin="false">
+							<header>
+								<Label text="{i18n>WEIGHT_PER_UOM}" id="label5"/>
+							</header>
+						</Column>
+						<!--<Column id="column10" vAlign="Top" hAlign="Center" minScreenWidth="Small" demandPopin="true">-->
+						<!--	<header>-->
+						<!--		<Label text="Date" id="label10"/>-->
+						<!--	</header>-->
+						<!--</Column>-->
+						<Column id="column6" vAlign="Top" hAlign="Center" visible="false" minScreenWidth="Small" demandPopin="false">
+							<header>
+								<Label text="{i18n>CUMWT}" id="label6"/>
+							</header>
+						</Column>
+						<Column id="column7" vAlign="Top" hAlign="Center" visible="false" minScreenWidth="Small" demandPopin="false">
+							<header>
+								<Label text="{i18n>QUAN_VAN}" id="label7"/>
+							</header>
+						</Column>
+						<Column id="column3" vAlign="Top" hAlign="Center">
+							<header>
+								<Label text="{i18n>QUAN_VAN}" id="label3"/>
+							</header>
+						</Column>
+						<Column id="column4" vAlign="Top" hAlign="Center">
+							<header>
+								<Label text="{i18n>QUAN_TOP}" id="label4"/>
+							</header>
+						</Column>
+						<Column id="column2" vAlign="Top" hAlign="Center">
+							<header>
+								<Label text="{i18n>QUAN_TARGET}" id="label2"/>
+							</header>
+						</Column>
+					</columns>
+				</Table>
+				<!--</form:SimpleForm>-->
+				<form:SimpleForm id="Form">
+					<HBox>
+						<Label text="GW:" design="Bold"/>
+						<Input xmlns="sap.m" id="CUMWT1" value="{CUMWT}" editable="false" textAlign="Right" fieldWidth="35%" width="auto"/>
+						<Label text="TW:" design="Bold"/>
+						<Input xmlns="sap.m" id="MAX_LOAD" editable="false" value="{MAX_LOAD}" textAlign="Right" visible="true" width="auto" fieldWidth="35%"/>
+					</HBox>
+				</form:SimpleForm>
+				<form:SimpleForm id="Form1">
+					<HBox>
+						<Label text="BOX:" design="Bold"/>
+						<Input xmlns="sap.m" id="SUMCAR" value="{SUMCAR}" editable="false" textAlign="Right" width="auto"/>
+						<Label text=" PC:" design="Bold"/>
+						<Input xmlns="sap.m" id="SUMPC" value="{SUMCAR}" editable="false" textAlign="Right" width="auto"/>
+					</HBox>
+				</form:SimpleForm>
+			</semantic:content>
+			<semantic:customFooterContent>
+				<Button ariaLabelledBy="__xmlview0--label1" id="button4" press="onSaveP" icon="sap-icon://print" visible="true" text="Save-Print" />
+				<Button ariaLabelledBy="__xmlview0--label1" id="button1" press="onSave" icon="sap-icon://save" visible="true" text="Save"/>
+				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button12" press="onAddS" icon="sap-icon://add-product"
+					text="Add Material(by Description)"/>
+				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button14" press="onNew" icon="sap-icon://detail-view" text="Existing Requests"/>
+				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button15" press="onSaveL" icon="sap-icon://sys-last-page" text="Save (Load Back)"/>
+			</semantic:customFooterContent>
+		</semantic:FullscreenPage>
+	</App>
+</mvc:View>

@@ -1,0 +1,37 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<Dialog id="MulDialog" resizable="false" contentWidth="auto" draggable="true">
+			<Table id="table1" width="auto" items="{ path : '/data', sorter: { path: 'VBELN' } }" noDataText="No data fetched"
+			growing="true" growingScrollToLoad="true">
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{VBELN}"/>
+						<Text text="{ERNAM}"/>
+						<Text text="{ERDAT}/{ERZET}"/>
+					</cells>
+				</ColumnListItem>
+			</items>
+			<columns>
+				<Column width="12em">
+					<header>
+						<Text text="SO"/>
+					</header>
+				</Column>
+				<Column  popinDisplay="Inline">
+					<header>
+						<Text text="Created By"/>
+					</header>
+				</Column>
+				<Column minScreenWidth="Small" demandPopin="true" popinDisplay="Inline">
+					<header>
+						<Text text="Created Date/Time"/>
+					</header>
+				</Column>
+			</columns>
+		</Table>
+		<beginButton>
+			<Button text="Close" press="handleClose"/>
+		</beginButton>
+		
+	</Dialog>
+</core:FragmentDefinition>
