@@ -5,12 +5,12 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageBox",
 	"sap/m/Dialog"
-], function(Controller, JSONModel, Filter, FilterOperator, MessageBox, Dialog) {
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, Dialog) {
 	"use strict";
 
 	return Controller.extend("com.baba.dsd.topupZDSD_TOPUP.controller.Main", {
 		//it will call on first hit 
-		onInit: function() {
+		onInit: function () {
 			//	var oModel = new sap.ui.model.odata.v2.ODataModel("/sap/opu/odata/sap/ZDSD_TOPUP_SRV/");
 			var oModel = new JSONModel();
 			var oTable = this.getView().byId("tab");
@@ -18,12 +18,26 @@ sap.ui.define([
 
 			var oModel1 = new sap.ui.model.odata.v2.ODataModel("/sap/opu/odata/sap/ZDSDO_TOPUP_SRV/", true);
 
+			// keeps the search state
+			this._aTableSearchState = [];
+			// Model used to manipulate control states
+			// var oViewModel = new JSONModel({
+			// 	worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
+			// 	shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
+			// 	shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
+			// 	shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
+			// 	tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+			// 	tableBusyDelay: 0
+			// });
+			var oViewModel = new JSONModel();
+			this.getView().setModel(oViewModel, "worklistView");
+
 			this.getView().byId("oSelect").setModel(oModel1);
 			this.byId("DATE").setDateValue(new Date());
 			this.oSearchField = this.getView().byId("NMATNR");
 		},
 
-		onAddS: function(oEvent) { //sear by Material dialog
+		onAddS: function (oEvent) { //sear by Material dialog
 			var that = this;
 			var oView = that.getView();
 
@@ -52,7 +66,7 @@ sap.ui.define([
 
 		},
 
-		onNew: function() {
+		onNew: function () {
 			var that = this;
 
 			var bname = that.getView().byId("oSelect").getSelectedKey();
@@ -111,7 +125,7 @@ sap.ui.define([
 
 				oModel1.read("/SOLISTSet", {
 					filters: PLFilters,
-					success: function(oData, oResponse) {
+					success: function (oData, oResponse) {
 						var res = [];
 						res = oData.results;
 
@@ -147,7 +161,7 @@ sap.ui.define([
 						oDialog.open();
 
 					},
-					error: function(oResponse) {
+					error: function (oResponse) {
 						// var oMsg = JSON.parse(oResponse.responseText);
 						// jQuery.sap.require("sap.m.MessageBox");
 						sap.m.MessageToast.show("No Stock Order Found");
@@ -159,13 +173,13 @@ sap.ui.define([
 
 		},
 
-		handleClose: function() {
+		handleClose: function () {
 			var that = this;
 			that.byId("MulDialog").destroy();
 
 		},
 
-		onMCloseDialog: function() {
+		onMCloseDialog: function () {
 			var that = this;
 			// var oTable = this.byId("table");
 			// oTable.getBinding("items").refresh();
@@ -176,7 +190,7 @@ sap.ui.define([
 			that.byId("MDialog").destroy();
 		},
 
-		onClr: function(event) {
+		onClr: function (event) {
 			var that = this;
 			//************************set blank values to table*******************************************//
 			var oModel = that.getView().byId("tab").getModel();
@@ -197,14 +211,57 @@ sap.ui.define([
 			//************************set blank values to table*******************************************//
 		},
 
-		onSearch: function(event) {
+		onSearch: function (event) {
 			var item = event.getParameter("suggestionItem");
 			if (item) {
 				sap.m.MessageToast.show(item.getText() + " selected");
 			}
+
+			var input1 = item.getText().split(" - ");
+			var input = input1[0];
+
+			var flg = "";
+			var oTable = this.byId("tab");
+			var oModel = oTable.getModel();
+			var aItems = oModel.oData.data; //All rows  
+
+			if (input !== "") {
+				if (aItems === undefined) {
+					sap.m.MessageToast.show("No Item to search");
+				} else {
+					for (var iRowIndex1 = 0; iRowIndex1 < aItems.length; iRowIndex1++) {
+						if (aItems[iRowIndex1].MATNR === input) {
+							flg = "X";
+							break;
+						}
+					}
+				}
+
+				if (flg === "X") {
+					// this.getView().byId("NMATNR").setValue(input);
+					var aTableSearchState = [];
+					var sQuery = input; //oEvent.getParameter("query");
+
+					if (sQuery && sQuery.length > 0) {
+						aTableSearchState = [new Filter("MATNR", FilterOperator.Contains, sQuery)];
+						//new Filter("MATNR", FilterOperator.Contains, sQuery.toUpperCase())
+					}
+					this._applySearch(aTableSearchState);
+				} else {
+					sap.m.MessageToast.show("Item doesn't exit in list");
+				}
+			} else {
+				sQuery = input; //oEvent.getParameter("query");
+
+				if (sQuery && sQuery.length > 0) {
+					aTableSearchState = [new Filter("MATNR", FilterOperator.Contains, sQuery)];
+					//new Filter("MATNR", FilterOperator.Contains, sQuery.toUpperCase())
+				}
+				this._applySearch(aTableSearchState);
+			}
 		},
 
-		onSuggest: function(event) {
+		onSuggest: function (event) {
 			//////add
 			var oView = this.getView();
 			oView.setModel(this.oModel);
@@ -230,19 +287,21 @@ sap.ui.define([
 			this.oSearchField.suggest();
 		},
 
-		onBusyS: function(oBusy) {
+		onBusyS: function (oBusy) {
 			oBusy.open();
 			oBusy.setBusyIndicatorDelay(40000);
 		},
 
-		onBusyE: function(oBusy) {
+		onBusyE: function (oBusy) {
 			oBusy.close();
 		},
 
-		onDate: function(oControlEvent) {
+		onDate: function (oControlEvent) {
 			var that = this;
 			//var value = oControlEvent.getSource().getProperty('value');
 			// var value = that.getView().byId("DATE")._lastValue;
+			
+			this._refreshList(oControlEvent);
 
 			var value = this.getView().byId("DATE")._lastValue;
 
@@ -299,7 +358,7 @@ sap.ui.define([
 
 				oModel1.read("/InputSet", {
 					filters: PLFilters,
-					success: function(oData, oResponse) {
+					success: function (oData, oResponse) {
 						var res = [];
 						var CUMWT1 = 0;
 						res = oData.results;
@@ -357,7 +416,7 @@ sap.ui.define([
 						that.onBusyE(oBusy);
 
 					},
-					error: function(oResponse) {
+					error: function (oResponse) {
 						that.onBusyE(oBusy);
 						var oMsg = JSON.parse(oResponse.responseText);
 						jQuery.sap.require("sap.m.MessageBox");
@@ -369,7 +428,7 @@ sap.ui.define([
 		},
 
 		//onUpdateF callfrom Table view Onupdatefinished - it call after table binded the data
-		onUpdateF: function(oEvent) {
+		onUpdateF: function (oEvent) {
 
 			// var oTable = this.getView().byId("tab");
 			// // Get the table Model
@@ -384,7 +443,7 @@ sap.ui.define([
 			// this.onTick();
 		},
 
-		onTick: function() {
+		onTick: function () {
 			var oTable = this.getView().byId("tab");
 			var aItems = oTable.getItems(); //All rows  
 			var oModel = oTable.getModel();
@@ -407,7 +466,7 @@ sap.ui.define([
 
 		},
 
-		onDchk: function(oEvent) {
+		onDchk: function (oEvent) {
 			var value = oEvent.getSource().getProperty('value');
 			var nval = Number(value);
 			if (value === "") {
@@ -425,7 +484,7 @@ sap.ui.define([
 		},
 
 		//Indivisual change of item of table 
-		onChange: function(oControlEvent) {
+		onChange: function (oControlEvent) {
 			var value = Number(oControlEvent.getSource().getProperty('value'));
 
 			var valueState = isNaN(value) ? "Error" : "Success";
@@ -528,8 +587,7 @@ sap.ui.define([
 			}
 		},
 
-		onAdd: function() {
-			debugger;
+		onAdd: function () {
 			var that = this;
 
 			var MAXLOAD1 = that.getView().byId("MAX_LOAD1").getValue();
@@ -612,7 +670,7 @@ sap.ui.define([
 
 					oModel1.read("/InputSet", {
 						filters: PLFilters,
-						success: function(oData, oResponse) {
+						success: function (oData, oResponse) {
 							var res = [];
 							res = oData.results;
 
@@ -656,7 +714,7 @@ sap.ui.define([
 							that.onBusyE(oBusy);
 							sap.m.MessageToast.show("New Material " + oMatnr + " added in the list");
 						},
-						error: function(oResponse) {
+						error: function (oResponse) {
 							that.onBusyE(oBusy);
 							var oMsg = JSON.parse(oResponse.responseText);
 							jQuery.sap.require("sap.m.MessageBox");
@@ -669,7 +727,7 @@ sap.ui.define([
 			}
 		},
 
-		onCal: function(NUM_DECIMAL_PLACES) {
+		onCal: function (NUM_DECIMAL_PLACES) {
 			var update_wt = 0;
 
 			var oTable = this.getView().byId("tab");
@@ -724,7 +782,7 @@ sap.ui.define([
 			this.getView().byId("SUMPC").setValue(sumpc);
 		},
 
-		onPri: function(ord) {
+		onPri: function (ord) {
 			var that = this;
 			var kunnr = this.getView().byId("oSelect").getSelectedKey();
 			var date = that.getView().byId("DATE")._lastValue;
@@ -736,7 +794,7 @@ sap.ui.define([
 			}
 		},
 
-		onSaveL: function(oControlEvent) {
+		onSaveL: function (oControlEvent) {
 			var that = this;
 			var savep = "";
 			var loc = "X";
@@ -744,7 +802,7 @@ sap.ui.define([
 			MessageBox.warning(
 				"Only VAN Quantity will be saved. Top Up quantity will be discarded. Continue to save Load Back?", {
 					actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
-					onClose: function(sAction) {
+					onClose: function (sAction) {
 						if (sAction === "OK") {
 							that.onSave(oControlEvent, savep, loc);
 						}
@@ -753,201 +811,219 @@ sap.ui.define([
 			);
 		},
 
-		onSaveP: function(oControlEvent) {
+		onSaveP: function (oControlEvent) {
 			var savep = "X";
 			var loc = "";
 			this.onSave(oControlEvent, savep, loc);
 		},
 
 		//Save button
-		onSave: function(oControlEvent, savep, loc) {
-				var that = this;
+		onSave: function (oControlEvent, savep, loc) {
+			this._refreshList(oControlEvent);
+			var that = this;
 
-				var val;
-				var oTable = that.getView().byId("tab");
-				// Get the table Model
-				var oModel = oTable.getModel();
-				// Get Items of the Table
-				var aItems = oTable.getItems(oModel); //All rows  
-				var aContexts = oTable.getSelectedContexts(); //selected rows marked with checkbox
-				var oCumwt1 = Number(that.getView().byId("CUMWT1").getValue());
-				var oMax_load = Number(that.getView().byId("MAX_LOAD").getValue());
-				if (oCumwt1 > oMax_load) {
-					sap.m.MessageToast.show("Cumulative Weight " + oCumwt1 + " can not be greater than Max Load " + oMax_load);
-				} else {
-					if (aItems.length > 0) {
-						// var alen = oModel.oData.data; //All rows  
-						var len = 0;
+			var val;
+			var oTable = that.getView().byId("tab");
+			// Get the table Model
+			var oModel = oTable.getModel();
+			// Get Items of the Table
+			var aItems = oTable.getItems(oModel); //All rows  
+			var aContexts = oTable.getSelectedContexts(); //selected rows marked with checkbox
+			var oCumwt1 = Number(that.getView().byId("CUMWT1").getValue());
+			var oMax_load = Number(that.getView().byId("MAX_LOAD").getValue());
+			if (oCumwt1 > oMax_load) {
+				sap.m.MessageToast.show("Cumulative Weight " + oCumwt1 + " can not be greater than Max Load " + oMax_load);
+			} else {
+				if (aItems.length > 0) {
+					// var alen = oModel.oData.data; //All rows  
+					var len = 0;
 
-						for (var i = 0; i < aItems.length; i++) {
-							if (aItems[i]._bGroupHeader === false) {
-								len = Number(len) + 1;
-							}
+					for (var i = 0; i < aItems.length; i++) {
+						if (aItems[i]._bGroupHeader === false) {
+							len = Number(len) + 1;
 						}
+					}
 
-						// if (aContexts.length !== aItems.length) {
-						if (aContexts.length !== len) {
-							sap.m.MessageToast.show("Not all lines confirmed");
-						} else {
+					// if (aContexts.length !== aItems.length) {
+					if (aContexts.length !== len) {
+						sap.m.MessageToast.show("Not all lines confirmed");
+					} else {
 
-							var oBusy = new sap.m.BusyDialog();
-							that.onBusyS(oBusy);
+						var oBusy = new sap.m.BusyDialog();
+						that.onBusyS(oBusy);
 
-							var oDate = that.getView().byId("DATE")._lastValue;
+						var oDate = that.getView().byId("DATE")._lastValue;
 
-							var dateFormatc = sap.ui.core.format.DateFormat.getDateInstance({
-								pattern: "yyyy-MM-dd"
-							});
+						var dateFormatc = sap.ui.core.format.DateFormat.getDateInstance({
+							pattern: "yyyy-MM-dd"
+						});
 
-							var oDatec = dateFormatc.format(new Date(oDate));
-							oDate = oDatec;
+						var oDatec = dateFormatc.format(new Date(oDate));
+						oDate = oDatec;
 
-							//////////////////////////////////////////////////////////////////////////////////////////////////
-							//not required - we do date comparsion in Odata
-							// var today = new Date();
-							// //date format
-							// var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({
-							// 	pattern: "yyyyMMdd"
-							// });
-							// var ovaluec = dateFormat.format(new Date(today)); //current date
-							// var ovalueg = dateFormat.format(new Date(oDate)); // given date
+						//////////////////////////////////////////////////////////////////////////////////////////////////
+						//not required - we do date comparsion in Odata
+						// var today = new Date();
+						// //date format
+						// var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({
+						// 	pattern: "yyyyMMdd"
+						// });
+						// var ovaluec = dateFormat.format(new Date(today)); //current date
+						// var ovalueg = dateFormat.format(new Date(oDate)); // given date
 
-							// var dateFormatc = sap.ui.core.format.DateFormat.getDateInstance({
-							// 	pattern: "yyyy-MM-dd"
-							// });
-							// if (ovaluec > ovalueg) {
-							// 	var oDatec = dateFormatc.format(new Date(today));
-							// } else {
-							// 	oDatec = dateFormatc.format(new Date(oDate));
-							// }
-							// oDate = oDatec;
-							//////////////////////////////////////////////////////////////////////////////////////////////////
+						// var dateFormatc = sap.ui.core.format.DateFormat.getDateInstance({
+						// 	pattern: "yyyy-MM-dd"
+						// });
+						// if (ovaluec > ovalueg) {
+						// 	var oDatec = dateFormatc.format(new Date(today));
+						// } else {
+						// 	oDatec = dateFormatc.format(new Date(oDate));
+						// }
+						// oDate = oDatec;
+						//////////////////////////////////////////////////////////////////////////////////////////////////
 
-							var user = that.getView().byId("oSelect").getSelectedKey();
+						var user = that.getView().byId("oSelect").getSelectedKey();
 
-							//	var oModel1 = new sap.ui.model.odata.v2.ODataModel("/sap/opu/odata/sap/ZDSD_TOPUP_SRV/", true);
-							var oModel1 = that.getView().getModel();
+						//	var oModel1 = new sap.ui.model.odata.v2.ODataModel("/sap/opu/odata/sap/ZDSD_TOPUP_SRV/", true);
+						var oModel1 = that.getView().getModel();
 
-							///////////////////////////////new logic commented/////////////////////////////////////////////////////							
-							oModel1.setUseBatch(true);
-							// return back from SAP-Backend to Firoi and show success or error
-							var mParameters = {
-								success: function(oEntry, oResponse) {
-									that.onBusyE(oBusy);
-								},
-								error: function(oResponse) {
-									var oMsg = JSON.parse(oResponse.responseText);
+						///////////////////////////////new logic commented/////////////////////////////////////////////////////							
+						oModel1.setUseBatch(true);
+						// return back from SAP-Backend to Firoi and show success or error
+						var mParameters = {
+							success: function (oEntry, oResponse) {
+								that.onBusyE(oBusy);
+							},
+							error: function (oResponse) {
+								var oMsg = JSON.parse(oResponse.responseText);
 
-									var oSev = oMsg.error.innererror.errordetails[0].severity;
-									if (oSev === "success") {
-										oTable.removeSelections(true);
-										// var sBtn = that.getView().byId("button1");
-										// var sBtn1 = that.getView().byId("button4");
-										// var sBtn2 = that.getView().byId("button12");
-										// var sBtn3 = that.getView().byId("button15");
-										// if (sBtn.getVisible()) {
-										// 	sBtn.setVisible(false);
-										// }
-										// if (sBtn1.getVisible()) {
-										// 	sBtn1.setVisible(false);
-										// }
-										// if (sBtn2.getVisible()) {
-										// 	sBtn2.setVisible(false);
-										// }
-										// if (sBtn3.getVisible()) {
-										// 	sBtn3.setVisible(false);
-										// }
-										that.onClr();
+								var oSev = oMsg.error.innererror.errordetails[0].severity;
+								if (oSev === "success") {
+									oTable.removeSelections(true);
+									// var sBtn = that.getView().byId("button1");
+									// var sBtn1 = that.getView().byId("button4");
+									// var sBtn2 = that.getView().byId("button12");
+									// var sBtn3 = that.getView().byId("button15");
+									// if (sBtn.getVisible()) {
+									// 	sBtn.setVisible(false);
+									// }
+									// if (sBtn1.getVisible()) {
+									// 	sBtn1.setVisible(false);
+									// }
+									// if (sBtn2.getVisible()) {
+									// 	sBtn2.setVisible(false);
+									// }
+									// if (sBtn3.getVisible()) {
+									// 	sBtn3.setVisible(false);
+									// }
+									that.onClr();
 
-									}
-									jQuery.sap.require("sap.m.MessageBox");
-									if (oSev === "success") {
-										var msg = "Data submitted.SO:" + oMsg.error.message.value;
-										sap.m.MessageToast.show(msg);
-									} else {
-										sap.m.MessageToast.show(oMsg.error.message.value);
-									}
+								}
+								jQuery.sap.require("sap.m.MessageBox");
+								if (oSev === "success") {
+									var msg = "Data submitted.SO:" + oMsg.error.message.value;
+									sap.m.MessageToast.show(msg);
+								} else {
+									sap.m.MessageToast.show(oMsg.error.message.value);
+								}
 
-									that.onBusyE(oBusy);
+								that.onBusyE(oBusy);
 
-									if (oSev === "success") {
-										if (savep === "X") {
-											if (val === undefined) {
-												that.onPri(oMsg.error.message.value);
-												val = "X";
-											}
+								if (oSev === "success") {
+									if (savep === "X") {
+										if (val === undefined) {
+											that.onPri(oMsg.error.message.value);
+											val = "X";
 										}
 									}
-
 								}
-							};
-							///////////////////////////////new logic commented/////////////////////////////////////////////////////
 
-							//Create Body
-							//var requestBody = {};
+							}
+						};
+						///////////////////////////////new logic commented/////////////////////////////////////////////////////
 
-							for (var iRowIndex = 0; iRowIndex < aItems.length; iRowIndex++) {
+						//Create Body
+						//var requestBody = {};
 
-								if (aItems[iRowIndex]._bGroupHeader === false) {
-									var mattext = aItems[iRowIndex].getCells()[0].getText(); //title as title as declared"
-									var l_mat = [],
-										l_material;
-									l_mat = mattext.split("-");
-									l_material = l_mat[0];
-									var l_uom = aItems[iRowIndex].getCells()[1].getText(); //text as text as declared"
-									var l_wtperuom = aItems[iRowIndex].getCells()[2].getValue();
-									//var l_dates    = aItems[iRowIndex].getCells()[3].getValue();
+						for (var iRowIndex = 0; iRowIndex < aItems.length; iRowIndex++) {
 
-									var l_qtyvan = aItems[iRowIndex].getCells()[5].getValue();
-									var l_qtytop = aItems[iRowIndex].getCells()[6].getValue();
-									var l_qtytar = aItems[iRowIndex].getCells()[7].getValue(); //value as input as declared"
+							if (aItems[iRowIndex]._bGroupHeader === false) {
+								var mattext = aItems[iRowIndex].getCells()[0].getText(); //title as title as declared"
+								var l_mat = [],
+									l_material;
+								l_mat = mattext.split("-");
+								l_material = l_mat[0];
+								var l_uom = aItems[iRowIndex].getCells()[1].getText(); //text as text as declared"
+								var l_wtperuom = aItems[iRowIndex].getCells()[2].getValue();
+								//var l_dates    = aItems[iRowIndex].getCells()[3].getValue();
 
-									//var l_cdates = dateFormat.format(new Date(l_dates));
+								var l_qtyvan = aItems[iRowIndex].getCells()[5].getValue();
+								var l_qtytop = aItems[iRowIndex].getCells()[6].getValue();
+								var l_qtytar = aItems[iRowIndex].getCells()[7].getValue(); //value as input as declared"
 
-									var tour_id = that.getView().byId("TOUR").getValue();
+								//var l_cdates = dateFormat.format(new Date(l_dates));
 
-									var oEntry = {};
-									oEntry.MATNR = l_material;
-									oEntry.UOM = l_uom;
-									// oEntry.ORD_DATE = oDate;
-									oEntry.QUAN_TARGET = l_qtytar;
-									oEntry.QUAN_VAN = l_qtyvan;
-									if (loc === "X") {
-										oEntry.QUAN_TOP = "0";
-									} else {
-										oEntry.QUAN_TOP = l_qtytop;
-									}
+								var tour_id = that.getView().byId("TOUR").getValue();
 
-									oEntry.WEIGHT_PER_UOM = l_wtperuom;
-									oEntry.UNAME = user;
-									oEntry.TOUR_ID = tour_id;
-
-									///////////////////////////////new logic commented/////////////////////////////////////////////////////
-									var sVal = "/InputSet(DATE='" + oDate + "',MATNR='" + l_material + "',UOM='" + l_uom + "',UNAME='" + user + "')";
-
-									///////////
-									mParameters.changeSetId = "changeset ";
-									oModel1.update(sVal, oEntry, mParameters);
-									////////////
-									///////////////////////////////new logic commented/////////////////////////////////////////////////////
-
+								var oEntry = {};
+								oEntry.MATNR = l_material;
+								oEntry.UOM = l_uom;
+								// oEntry.ORD_DATE = oDate;
+								oEntry.QUAN_TARGET = l_qtytar;
+								oEntry.QUAN_VAN = l_qtyvan;
+								if (loc === "X") {
+									oEntry.QUAN_TOP = "0";
+								} else {
+									oEntry.QUAN_TOP = l_qtytop;
 								}
-							} //end of for
 
-							///////////////////////////////new logic commented/////////////////////////////////////////////////////
-							//	Finally, submit all the batch changes 
-							oModel1.submitChanges({
-								chageSetId: mParameters,
-								success: function() {},
-								error: function() {}
-							});
-							///////////////////////////////new logic commented/////////////////////////////////////////////////////							
-						}
-					} else {
-						sap.m.MessageToast.show("No Data for Posting");
+								oEntry.WEIGHT_PER_UOM = l_wtperuom;
+								oEntry.UNAME = user;
+								oEntry.TOUR_ID = tour_id;
+
+								///////////////////////////////new logic commented/////////////////////////////////////////////////////
+								var sVal = "/InputSet(DATE='" + oDate + "',MATNR='" + l_material + "',UOM='" + l_uom + "',UNAME='" + user + "')";
+
+								///////////
+								mParameters.changeSetId = "changeset ";
+								oModel1.update(sVal, oEntry, mParameters);
+								////////////
+								///////////////////////////////new logic commented/////////////////////////////////////////////////////
+
+							}
+						} //end of for
+
+						///////////////////////////////new logic commented/////////////////////////////////////////////////////
+						//	Finally, submit all the batch changes 
+						oModel1.submitChanges({
+							chageSetId: mParameters,
+							success: function () {},
+							error: function () {}
+						});
+						///////////////////////////////new logic commented/////////////////////////////////////////////////////							
+					}
+				} else {
+					sap.m.MessageToast.show("No Data for Posting");
+				}
+			}
+
+		},
+
+		_refreshList: function (oEvent) {
+			var aTableSearchState = [];
+			this._applySearch(aTableSearchState);
+		},
+
+		_applySearch: function (aTableSearchState) {
+				var oTable = this.byId("tab"),
+					oViewModel = this.getView().getModel("worklistView");
+				oTable.getBinding("items").filter(aTableSearchState, "Application");
+				// changes the noDataText of the list in case there are no filter results
+				if (aTableSearchState !== undefined) {
+					if (aTableSearchState.length !== 0) {
+						oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 					}
 				}
-
 			}
 			/////////////////////////////////////////////////////
 	});
