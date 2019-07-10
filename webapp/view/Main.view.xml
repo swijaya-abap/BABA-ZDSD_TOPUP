@@ -37,8 +37,8 @@
 					</form:SimpleForm>
 				</Panel>
 				<!--<form:SimpleForm layout="ResponsiveLayout" editable="true" labelSpanL="3" labelSpanM="3" emptySpanL="3" emptySpanM="3" columnsL="1">-->
-				<Table noDataText="No Data found" id="tab" items="{ path : '/data', sorter : { path : 'UOM', descending: false, group: true } }" updateFinished="onUpdateF"
-					mode="MultiSelect" class="sapUiResponsiveMargin" alternateRowColors="true">
+				<Table noDataText="No Data found" id="tab" items="{ path : '/data', sorter : { path : 'UOM', descending: false, group: true } }"
+					updateFinished="onUpdateF" mode="MultiSelect" class="sapUiResponsiveMargin" alternateRowColors="true">
 					<items>
 						<!--<items id="items" path="/InputSet">-->
 						<ColumnListItem type="Active" id="item0">
@@ -115,6 +115,9 @@
 						</Column>
 					</columns>
 				</Table>
+				<HBox>
+					<CheckBox selected="false" id="DISABLE_WCHECK" text="Disable Weight check"/>
+				</HBox>
 				<!--</form:SimpleForm>-->
 				<form:SimpleForm id="Form">
 					<HBox>
@@ -134,12 +137,14 @@
 				</form:SimpleForm>
 			</semantic:content>
 			<semantic:customFooterContent>
-				<Button ariaLabelledBy="__xmlview0--label1" id="button4" press="onSaveP" icon="sap-icon://print" visible="true" text="Save-Print" />
+				<Button ariaLabelledBy="__xmlview0--label1" id="button4" press="onSaveP" icon="sap-icon://print" visible="true" text="Save-Print"/>
 				<Button ariaLabelledBy="__xmlview0--label1" id="button1" press="onSave" icon="sap-icon://save" visible="true" text="Save"/>
+				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button9" press="onRef" icon="sap-icon://refresh"/>
 				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button12" press="onAddS" icon="sap-icon://add-product"
 					text="Add Material(by Description)"/>
 				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button14" press="onNew" icon="sap-icon://detail-view" text="Existing Requests"/>
-				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button15" press="onSaveL" icon="sap-icon://sys-last-page" text="Save (Load Back)"/>
+				<Button ariaLabelledBy="__xmlview0--label1" width="auto" id="button15" press="onSaveL" icon="sap-icon://sys-last-page"
+					text="Save (Load Back)"/>
 			</semantic:customFooterContent>
 		</semantic:FullscreenPage>
 	</App>

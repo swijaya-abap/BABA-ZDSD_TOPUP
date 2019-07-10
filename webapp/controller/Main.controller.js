@@ -300,7 +300,7 @@ sap.ui.define([
 			var that = this;
 			//var value = oControlEvent.getSource().getProperty('value');
 			// var value = that.getView().byId("DATE")._lastValue;
-			
+
 			this._refreshList(oControlEvent);
 
 			var value = this.getView().byId("DATE")._lastValue;
@@ -782,6 +782,11 @@ sap.ui.define([
 			this.getView().byId("SUMPC").setValue(sumpc);
 		},
 
+		onRef: function (oEvent, SMAT) {
+			var aTableSearchState = [];
+			this._applySearch(aTableSearchState);
+		},
+
 		onPri: function (ord) {
 			var that = this;
 			var kunnr = this.getView().byId("oSelect").getSelectedKey();
@@ -831,7 +836,8 @@ sap.ui.define([
 			var aContexts = oTable.getSelectedContexts(); //selected rows marked with checkbox
 			var oCumwt1 = Number(that.getView().byId("CUMWT1").getValue());
 			var oMax_load = Number(that.getView().byId("MAX_LOAD").getValue());
-			if (oCumwt1 > oMax_load) {
+			var wcheck = this.getView().byId("DISABLE_WCHECK").getValue();
+			if (wcheck !== true && oCumwt1 > oMax_load) {
 				sap.m.MessageToast.show("Cumulative Weight " + oCumwt1 + " can not be greater than Max Load " + oMax_load);
 			} else {
 				if (aItems.length > 0) {
