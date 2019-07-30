@@ -35,6 +35,14 @@ sap.ui.define([
 			this.getView().byId("oSelect").setModel(oModel1);
 			this.byId("DATE").setDateValue(new Date());
 			this.oSearchField = this.getView().byId("NMATNR");
+
+			// Get User ID
+			if (sap.ushell.Container) {
+				this.sUser = sap.ushell.Container.getService("UserInfo").getId();
+			}
+			if (this.sUser) {
+				this.byId("oSelect").setSelectedKey(this.sUser);
+			}
 		},
 
 		onAddS: function (oEvent) { //sear by Material dialog
@@ -836,7 +844,7 @@ sap.ui.define([
 			var aContexts = oTable.getSelectedContexts(); //selected rows marked with checkbox
 			var oCumwt1 = Number(that.getView().byId("CUMWT1").getValue());
 			var oMax_load = Number(that.getView().byId("MAX_LOAD").getValue());
-			var wcheck = this.getView().byId("DISABLE_WCHECK").getValue();
+			var wcheck = this.getView().byId("DISABLE_WCHECK").getSelected();
 			if (wcheck !== true && oCumwt1 > oMax_load) {
 				sap.m.MessageToast.show("Cumulative Weight " + oCumwt1 + " can not be greater than Max Load " + oMax_load);
 			} else {
