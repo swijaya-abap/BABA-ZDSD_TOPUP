@@ -33,6 +33,8 @@ sap.ui.define([
 			this.getView().setModel(oViewModel, "worklistView");
 
 			this.getView().byId("oSelect").setModel(oModel1);
+			this.getView().byId("oSelect").getModel().setSizeLimit('500');
+			
 			this.byId("DATE").setDateValue(new Date());
 			this.oSearchField = this.getView().byId("NMATNR");
 
